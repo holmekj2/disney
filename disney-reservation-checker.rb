@@ -10,8 +10,8 @@ BREAKFAST = 80000712
 $restaurants = {"BE_OUR_GUEST" => 16660079, "CRYSTAL_PALACE" => 90002660, "CINDERELLAS_ROYAL_TABLE" => 90002464}
 
 #reservation_date = "2019-03-28"
-$notify_email = "3175083275@vtext.com"
-#$notify_email = 'holmekj2@gmail.com'
+$notify_text = "3175083275@vtext.com"
+$notify_email = 'holmekj2@gmail.com'
 $reservation_dates = ["2019-03-25", "2019-03-26", "2019-03-27", "2019-03-28"]
 $reservation_time = LUNCH
 $party_size = 5
@@ -56,7 +56,8 @@ def search
                 puts available_times
                 subject = "#{$restaurant_name} #{reservation_date}"
                 $status = subject + ":" + available_times
-                send_mail($notify_email, subject, available_times)
+                send_mail($notify_text, subject, available_times)
+                send_mail($notify_email, "#{subject}:#{available_times}", "http://99.32.162.56:4567/response")
                 return 0
             elsif $response.match(/data-hasavailability/)
                 $status = "#{iterations}. #{reservation_date} not available"
