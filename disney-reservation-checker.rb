@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'time'
 require_relative 'send-mail.rb'
 
 set :bind, '0.0.0.0'
@@ -7,16 +8,43 @@ set :bind, '0.0.0.0'
 LUNCH = 80000717
 DINNER = 80000714
 BREAKFAST = 80000712
-$restaurants = {"BE_OUR_GUEST" => 16660079, "CRYSTAL_PALACE" => 90002660, "CINDERELLAS_ROYAL_TABLE" => 90002464}
+$restaurants = {"BE_OUR_GUEST" => 16660079, 
+    "CRYSTAL_PALACE" => 90002660, 
+    "CINDERELLAS_ROYAL_TABLE" => 90002464,
+    "CAPE_MAY" => 90001347,
+    "BROWN_DERBY" => 90002245}
 
 #reservation_date = "2019-03-28"
 $notify_text = "3175083275@vtext.com"
 $notify_email = 'holmekj2@gmail.com'
-$reservation_dates = ["2019-03-25", "2019-03-26", "2019-03-27", "2019-03-28"]
-$reservation_time = LUNCH
+#$reservation_dates = ["2019-03-25", "2019-03-26", "2019-03-27", "2019-03-28"]
+$reservation_dates = ["2019-10-05"]
+if ARGV.length >= 1
+    #Time can by "14:30", "LUNCH", "DINNER", "BREAKFAST"
+    $reservation_dates = [ARGV[0]]
+end
+
+#$reservation_dates = ["2019-05-10"]
+#$reservation_time = LUNCH
+$reservation_time = "12:30"
+if ARGV.length >= 2
+    #Time can by "14:30", "LUNCH", "DINNER", "BREAKFAST"
+    $reservation_time = ARGV[1]
+end
+
 $party_size = 5
 $max_iterations = 1000
 $restaurant_name = 'BE_OUR_GUEST'
+if ARGV.length >= 3 
+    $restaurant_name = ARGV[2]
+end
+
+$httpport = 4567
+if ARGV.length >= 4
+    $httpport = ARGV[3].to_i
+end
+set :port, $httpport 
+
 
 $response = ""
 $status = ""
@@ -24,7 +52,7 @@ $status = ""
 #system "#{request_curl}"
 def search
     times_regex = /<span class="buttonText">(.*)<\/span>/
-    loop_sleep_seconds = 240
+    loop_sleep_seconds = 60
     restaurant_id = $restaurants[$restaurant_name]
     puts "starting search for #{$restaurant_name} #{$reservation_dates}"
     iterations = 1
@@ -53,12 +81,34 @@ def search
                 #puts response
                 times_match = $response.scan(times_regex)
                 available_times = times_match.to_s   
-                puts available_times
-                subject = "#{$restaurant_name} #{reservation_date}"
-                $status = subject + ":" + available_times
-                send_mail($notify_text, subject, available_times)
-                send_mail($notify_email, "#{subject}:#{available_times}", "http://99.32.162.56:4567/response")
-                return 0
+                #available_times = available_times[0]
+                available_times = JSON.parse(available_times)
+                puts "unfiltered times: #{available_times}"
+                #If we are looking for a specific time then filter times outside of 
+                #a half hour
+                if $reservation_time != "LUNCH" and $reservation_time != "DINNER"
+                    treservation_time = Time.parse($reservation_time)
+                    available_times.select!{ |t| 
+                        t0 = t[0]
+                        at = Time.parse(t0)
+                        #puts "at: #{at}"
+                        # if treservation_time.hour > 12
+                        #     at = at + 12 * 60 * 60
+                        # end
+                        delta_seconds = (at - treservation_time).abs 
+                        delta_seconds <= 1800
+                    }
+                end
+                if available_times.length > 0 
+                    savailable_times = available_times.to_s
+                    puts "filtered times: #{savailable_times}"
+                    subject = "#{$restaurant_name} #{reservation_date}"
+                    $status = subject + ":" + savailable_times
+                    url = "http://99.32.162.56:#{$httpport}/response"
+                    send_mail($notify_text, subject, savailable_times)
+                    send_mail($notify_email, "#{subject}:#{savailable_times}", url)
+                    #return 0
+                end
             elsif $response.match(/data-hasavailability/)
                 $status = "#{iterations}. #{reservation_date} not available"
                 puts $status
