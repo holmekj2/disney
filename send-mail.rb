@@ -36,5 +36,5 @@ end
 #     }
 #   })
 
-#send_mail('holmekj2@gmail.com', "", "test2")
+send_mail('holmekj2@gmail.com', "", "test2")
 #send_mail('3175083275@vtext.com', "", "test2")
