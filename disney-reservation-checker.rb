@@ -14,6 +14,8 @@ $restaurants = {"BE_OUR_GUEST" => 16660079,
     "CAPE_MAY" => 90001347,
     "SCIFI" => 90002114,
     "BIER" => 90001292,
+    "EDISON" => 18472966,
+    "MORIMOTO" => 17936194,
     "BROWN_DERBY" => 90002245}
 
 #reservation_date = "2019-03-28"
@@ -21,24 +23,24 @@ $notify_text = "3175083275@vtext.com"
 $notify_email = 'holmekj2@gmail.com'
 #$reservation_dates = ["2019-03-25", "2019-03-26", "2019-03-27", "2019-03-28"]
 $reservation_dates = ["2021-03-25"]
-if ARGV.length >= 1
+if ARGV.length >= 2
     #Time can by "14:30", "LUNCH", "DINNER", "BREAKFAST"
-    $reservation_dates = [ARGV[0]]
+    $reservation_dates = [ARGV[1]]
 end
 
 #$reservation_dates = ["2019-05-10"]
 $reservation_time = DINNER
 #$reservation_time = "12:30"
-if ARGV.length >= 2
+if ARGV.length >= 3
     #Time can by "14:30", "LUNCH", "DINNER", "BREAKFAST"
-    $reservation_time = ARGV[1]
+    $reservation_time = ARGV[2]
 end
 
 $party_size = 5
 $max_iterations = 1000
 $restaurant_name = 'SCIFI'
-if ARGV.length >= 3 
-    $restaurant_name = ARGV[2]
+if ARGV.length >= 1 
+    $restaurant_name = ARGV[0]
 end
 
 $httpport = 4567
@@ -108,7 +110,7 @@ def search
                     puts "filtered times: #{savailable_times}"
                     subject = "#{$restaurant_name} #{reservation_date}"
                     $status = subject + ":" + savailable_times
-                    url = "http://localhost:#{$httpport}/response"
+                    url = "http://192.168.5.171:#{$httpport}/response"
                     send_mail($notify_text, subject, savailable_times)
                     send_mail($notify_email, "#{subject}:#{savailable_times}", url)
                     #return 0

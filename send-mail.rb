@@ -36,5 +36,7 @@ end
 #     }
 #   })
 
-send_mail('holmekj2@gmail.com', "", "test2")
+if __FILE__ == $0
+    send_mail('holmekj2@gmail.com', "", "test2")
+end
 #send_mail('3175083275@vtext.com', "", "test2")
